@@ -1,0 +1,194 @@
+---
+title: "Introduction to R"
+author: "Madison Sandqust"
+date: "2026-01-09"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+## Looking at the dataframe
+Today, we will be using data that is already in R to go over some basic functions.
+
+```{r}
+data("iris") # this is a data frame already loaded into R
+
+head(iris) # use head function to see the content of data set 
+
+nrow(iris) # the number of rows in the data set 
+
+ncol(iris) # the number of columns
+```
+
+## Pacakges - Introduction in Tidyverse
+
+R has a lot of power in its basic form, but one of the most important parts about R is that it is expandable by the work of other people. These expansions are usually released in “packages”. One of the most widely used packaged is tidyverse, which is used to manipulate and clean data. Throughout this course we will be using the basic functions in tidyverse
+
+```{r}
+# in order to use a package, you need to first load it in. To do so use the library() function. 
+library(tidyverse)
+```
+
+### Creating a new column
+
+To create a new column, use the mutate function within the package
+
+```{r}
+df <- iris #this line of code just makes the iris data set a object 
+
+df2 <- df %>%
+  mutate(sepal.minus.petal.length = Sepal.Length - Petal.Length)
+#this line of code reads: df2 is same data frame as df but with a new column that subtracts sepal length from petal length 
+
+head(df2)
+
+```
+
+### Summary
+
+To summarize you data, use the summarize function that collapses all rows and returns a one-row summary
+
+```{r}
+df3 <- df %>% 
+  summarize(Average.Sepal.Length = mean(Sepal.Length))
+
+
+# this line reads, i want to make df3 from df but collapses the rows into a one row summary of the mean 
+# basically taking the mean of each row
+head(df3)
+
+# But the problem is there are different groups, so this summary is not the most informative as possible, so lets get the averages of all groups
+colnames(df)
+# Lets see what the groups of species are
+unique(df$Species)
+```
+
+### Grouping
+
+Use the group by function to group certain groups together before calculations
+
+```{r}
+df3 <- df %>% 
+  group_by(Species) %>% 
+  summarize(Average.Sepal.Length = mean(Sepal.Length))
+
+head(df3)
+
+# this is much different compared to the mean not grouping by species.
+```
+
+So what if we don't want to use the whole data set and just a subset of the data, we can filter so specific information.
+
+### Filtering
+
+Filtering only retains specific rows of data that meet the specified requirement(s).
+
+```{r}
+df4 <- df %>% 
+  filter(Sepal.Length > 5) #filter by numerical value
+
+df5 <- df %>% 
+  filter(Species == "setosa") # filter by category
+
+df6 <- df %>% 
+  filter(Species == "setosa", Sepal.Length > 5) # filtering by both at the same time
+
+head(df6)
+```
+
+### Selecting
+
+So right now our data frame has 5 columns. If we want to simplify our df and only care about sepals, we can select for those columns
+
+```{r}
+head(df)
+
+df7 <- df %>%
+  select(Sepal.Length, Sepal.Width, Species)
+
+head(df7) #now we only have a dataframe with information about sepals and also species
+```
+
+## Intro to ggplot
+
+Another really useful package is ggplot - which is apart of the tidyverse package. Ggplot is useful in plotting data
+
+```{r}
+flower <- ggplot(iris, aes(x = Species, y = Sepal.Length))+
+  geom_boxplot()
+
+flower
+```
+
+Lets make it a little fancier... For lab reports, your graphs should have title, x and y axis label, and a touch of color.
+
+```{r}
+flower <- ggplot(iris, aes(x = Species, y = Sepal.Length, color = Species))+
+  geom_boxplot() + 
+labs(
+    title = "Sepal Length by Species",
+    x = "Species",
+    y = "Sepal Length (cm)"
+  )+
+theme_classic()
+
+flower
+```
+
+# Diamond Example
+
+Questions -
+
+How many rows and columns are in the data set diamonds?
+
+What is the average price for each cut of diamond?
+
+What is the average price for each caret of diamond?
+
+Which do you think is more influential in pricing of diamonds?
+
+```{r}
+diamonds <- diamonds
+
+nrow(diamonds) # number of rows
+ncol(diamonds) # number of columns 
+
+head(diamonds)
+
+# average price by cut
+df2 <- diamonds %>% 
+  select(cut, price) %>% 
+  group_by(cut) %>% 
+  summarize(average_price = mean(price))
+
+df2
+
+# average price by caret
+df3 <- diamonds %>% 
+  select(carat, price) %>% 
+  group_by(carat) %>% 
+  summarize(average_price = mean(price))
+
+df3
+```
+
+### Plotting
+
+```{r}
+# boxplot price by cut
+p <- ggplot(diamonds, aes(x=cut, y=price)) + 
+  geom_boxplot()
+p
+
+# scatter plot by caret color by cut. 
+p2 <- ggplot(diamonds, aes(x=carat, y =price, color = cut))+
+  geom_point()
+
+p2
+```
